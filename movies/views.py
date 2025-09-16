@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Movie, Review
 from django.contrib.auth.decorators import login_required
+from .models import MovieRequest
 # Create your views here.
 
 
@@ -63,3 +64,39 @@ def delete_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id, user=request.user)
     review.delete()
     return redirect('movies.show', id=id)
+
+
+@login_required
+def movie_requests(request):
+    """
+    Single page that:
+    - GET: shows the user's existing requests
+    - POST with action=create: creates a new request
+    - POST with action=delete: deletes the user's own request
+    """
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'create':
+            name = request.POST.get('name', '').strip()
+            description = request.POST.get('description', '').strip()
+            if name and description:
+                MovieRequest.objects.create(
+                    name=name,
+                    description=description,
+                    user=request.user
+                )
+            return redirect('movies.requests')
+
+        if action == 'delete':
+            req_id = request.POST.get('request_id')
+            req = get_object_or_404(MovieRequest, id=req_id, user=request.user)
+            req.delete()
+            return redirect('movies.requests')
+
+    # GET
+    my_requests = MovieRequest.objects.filter(user=request.user).order_by('-date')
+    template_data = {
+        'title': 'My Movie Requests',
+        'my_requests': my_requests,
+    }
+    return render(request, 'movies/requests.html', {'template_data': template_data})

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col-md-8 mx-auto mb-3">
+        <h2>{{ template_data.title }}</h2>
+        <hr/>
+
+        <!-- Create new request -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Request a Movie</h5>
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="create">
+              <div class="mb-3">
+                <label for="name" class="form-label">Movie Name</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Movie Description</label>
+                <textarea id="description" name="description" class="form-control" required></textarea>
+              </div>
+              <button type="submit" class="btn bg-dark text-white">Submit Request</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Your requests -->
+        <h5>Your Requests</h5>
+        <ul class="list-group">
+          {% for r in template_data.my_requests %}
+            <li class="list-group-item pb-3 pt-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>{{ r.name }}</strong><br>
+                  <small class="text-muted">{{ r.date }}</small>
+                  <p class="mb-1">{{ r.description }}</p>
+                </div>
+                <form method="POST" class="ms-3">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="request_id" value="{{ r.id }}">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% empty %}
+            <li class="list-group-item">You have not requested any movies yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
